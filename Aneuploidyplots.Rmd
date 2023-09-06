@@ -1,0 +1,95 @@
+---
+title: "Aneuploidy_Analyses_DDX3Feedback_SR_2022"
+output: html_document
+date: "2022-11-09"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#Data files downloaded from https://www.cell.com/cell-genomics/pdf/S2666-979X(23)00015-0.pdf
+load(file="txi_aneuploidy.rda")
+allTPMs = as.data.frame(txi_aneuploidy$abundance)
+DDX3_metadata = read.delim("metadata_20210811.txt")
+```
+
+```{r}
+#Extract expressed X-Y pairs 
+all_TPM_DDX3 = allTPMs[c("DDX3X","DDX3Y","ZFX","ZFY","KDM6A","UTY","KDM5C","KDM5D","RPS4X","RPS4Y1","USP9X","USP9Y","PRKX","PRKY"),]
+```
+
+```{r}
+#Transpose data frames
+all_TPM_DDX3 = as.data.frame(t(all_TPM_DDX3))
+```
+
+
+```{r}
+# Separate Fibroblast and LCL Metadata
+DDX3_metadata_fib = DDX3_metadata[which(DDX3_metadata$cell_type == "Fib"),]
+DDX3_metadata_lcl = DDX3_metadata[which(DDX3_metadata$cell_type == "LCL"),]
+
+```
+
+```{r}
+#Merge metadata and dataframes and split into fib and LCLs
+#lcl_struc_merge = merge(DDX3_metadata,lcl_struc_DDX3)
+all_TPM_DDX3_merge = merge(DDX3_metadata, all_TPM_DDX3)
+
+all_TPM_fib = all_TPM_DDX3_merge[which(all_TPM_DDX3_merge$cell_type == "Fib"),]
+all_TPM_lcl = all_TPM_DDX3_merge[which(all_TPM_DDX3_merge$cell_type == "LCL"),]
+```
+
+```{r}
+#Extract Which Samples Have Exactly 1 X
+One_X_fib = all_TPM_fib[which(all_TPM_fib$x_count == 1),]
+One_X_lcl = all_TPM_lcl[which(all_TPM_lcl$x_count == 1),]
+```
+
+```{r}
+#Extract Which Samples Have Exactly 1 Y
+One_Y_fib = all_TPM_fib[which(all_TPM_fib$y_count == 1), ]
+One_Y_lcl = all_TPM_lcl[which(all_TPM_lcl$y_count == 1),]
+```
+
+
+```{r}
+# Plot 1 X Chromosome DDX3X TPM Against Y-count scatter, and vice versa with Pearson correlation
+library(ggplot2)
+library(ggpubr)
+library(ggbreak)
+One_Y_l = data.frame(One_Y_lcl$x_count, One_Y_lcl$DDX3Y,One_Y_lcl$DDX3X)
+One_X_l = data.frame(One_X_lcl$y_count, One_X_lcl$DDX3Y,One_X_lcl$DDX3X)
+One_Y_f = data.frame(One_Y_fib$x_count, One_Y_fib$DDX3Y,One_Y_fib$DDX3X)
+One_X_f = data.frame(One_X_fib$y_count, One_X_fib$DDX3Y,One_X_fib$DDX3X)
+```
+
+
+
+```{r}
+#plot each variable of interest
+onexfibddx3x= ggplot() +
+  geom_point(data = One_X_f, aes(x =One_X_fib.y_count, y =One_X_fib.DDX3X), color = 'orange',position = position_jitter(w = 0.1, h = 0.1)) +
+  geom_smooth(data = One_X_f, aes(x =One_X_fib.y_count, y =One_X_fib.DDX3X), color = 'orange',method = 'lm',se=FALSE) +
+  xlab("Number of Y Chromosomes") +
+  ylab("TPM") +
+  theme_classic()
+  #scale_y_break(c(40, 110))
+ggsave(plot = onexfibddx3x, width = 3.5, height = 3, dpi = 300, filename = "/lab/solexa_page/shruthir/Paperfigures/Aneuploidy/onexfibddx3x.pdf")
+```
+
+```{r}
+onexfibddx3y= ggplot() +
+  geom_point(data = One_X_f, aes(x =One_X_fib.y_count, y =One_X_fib.DDX3Y), color = 'purple',position = position_jitter(w = 0.1, h = 0.1)) +
+  geom_smooth(data = One_X_f, aes(x =One_X_fib.y_count, y =One_X_fib.DDX3Y), color = 'purple',method ='lm',se=FALSE) +
+  xlab("Number of Y Chromosomes") +
+  ylab("TPM") +
+  theme_classic()
+  #scale_y_break(c(40, 110))
+ggsave(plot = onexfibddx3y, width = 3.5, height = 3, dpi = 300, filename = "/lab/solexa_page/shruthir/Paperfigures/Aneuploidy/onexfibddx3y.pdf")
+```
+
+
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

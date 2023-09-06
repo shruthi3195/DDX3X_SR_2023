@@ -1,0 +1,41 @@
+---
+title: 
+output: html_document
+---
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+#Get TPMs from kallisto and combine into a DEseq object. Extract TPMs
+#annotation file contains transcript to gene conversions
+annofile <- read.delim("annotationfile.txt",stringsAsFactors = FALSE)
+tx2gene <- data.frame("TXNAME"=annofile$transcript_id, "GENEID"=annofile$gene_name)
+ 
+library(tximport)
+#metadata file contains sample, genotype, condition and location (path) to kallisto files
+metadata = read.delim("metadata.txt")
+
+files <- paste0(metadata$kallisto_path) 
+names(files) <- metadata$SampleName
+
+#tximport
+txi <- tximport(files, type = "kallisto", tx2gene = tx2gene)
+  save(txi,file="txi.rda")
+ load(file="txi.rda")
+tximport("abundance.tsv", type = "kallisto", tx2gene = tx2gene) 
+write.table(txi$abundance, file="txi_TPM.txt", sep="\t", quote=F,col.names = NA)
+
+
+```
+
+
+
+
+
+
+
