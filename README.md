@@ -1,2 +1,4 @@
 # DDX3X_SR_2023
-Code and files used for analyses in DDX3X Paper 
+Code used for analyses in "Post-transcriptional cross- and auto-regulation buffer expression 
+of the human RNA helicases DDX3X and DDX3Y"
+ 
